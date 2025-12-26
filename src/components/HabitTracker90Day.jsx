@@ -162,10 +162,10 @@ export default function HabitTracker90Day({ domainId }) {
                                                         onClick={() => !isFuture && toggleHabit(domainId, habit.id, date)}
                                                         disabled={isFuture}
                                                         className={`w-8 h-8 rounded border-2 transition-all ${isCompleted
-                                                                ? 'bg-emerald-500 border-emerald-500'
-                                                                : isFuture
-                                                                    ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50'
-                                                                    : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                                                            ? 'bg-emerald-500 border-emerald-500'
+                                                            : isFuture
+                                                                ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50'
+                                                                : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                                                             } ${isCurrent && !isCompleted ? 'ring-2 ring-amber-400' : ''}`}
                                                         title={`${formatDayLabel(dayIndex)} - ${date}`}
                                                     >
@@ -227,9 +227,9 @@ export default function HabitTracker90Day({ domainId }) {
                             )}
                         </div>
 
-                        {/* Progress Checkboxes - Scrollable Grid */}
+                        {/* Progress Checkboxes - 2 Rows */}
                         <div className="overflow-x-auto">
-                            <div className="grid grid-cols-10 gap-2 min-w-max">
+                            <div className="grid grid-rows-2 grid-flow-col gap-2 auto-cols-max">
                                 {allDates.map((date, dayIndex) => {
                                     const isCompleted = habit.completions && habit.completions[date];
                                     const isCurrent = isCurrentDay(cycleStartDate, dayIndex);
