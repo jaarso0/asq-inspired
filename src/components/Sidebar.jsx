@@ -4,7 +4,10 @@ export default function Sidebar({ isOpen, onClose }) {
     const location = useLocation();
 
     const menuItems = [
-        { path: '/settings', label: '⚙️ Settings', icon: '⚙️' }
+        { path: '/', label: 'Dashboard', icon: '🏠' },
+        { path: '/progress', label: 'Progress', icon: '📊' },
+        { path: '/habit-tracker', label: 'Habit Tracker', icon: '✅' },
+        { path: '/settings', label: 'Settings', icon: '⚙️' }
     ];
 
     const handleLinkClick = () => {
@@ -46,8 +49,8 @@ export default function Sidebar({ isOpen, onClose }) {
                                     to={item.path}
                                     onClick={handleLinkClick}
                                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === item.path
-                                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 font-medium'
-                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 font-medium'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                                         }`}
                                 >
                                     <span className="text-xl">{item.icon}</span>

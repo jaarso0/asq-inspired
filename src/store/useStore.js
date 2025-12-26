@@ -20,6 +20,7 @@ function createDefaultDomainState(domainId) {
         assessmentScore: 0,
         assessmentCompleted: false,
         habits: [],
+        goals: [], // 90-day goals for this domain
         reflections: [],
         history: [
             {
@@ -394,6 +395,79 @@ export const useStore = create(
                     focusDomains: [],
                     weeklyIntegrations: [],
                     cycleStartDate: getToday()
+                });
+            },
+
+            /**
+             * Add a goal to a domain
+             */
+            addGoal: (domainId, goalText) => {
+                set(state => {
+                    const domain = state.domains[domainId];
+                    // Initialize goals array if it doesn't exist (for backward compatibility)
+                    const currentGoals = domain.goals || [];
+
+                    return {
+                        domains: {
+                            ...state.domains,
+                            [domainId]: {
+                                ...domain,
+                                goals: [
+                                    ...currentGoals,
+                                    {
+                                        id: Date.now().toString(),
+                                        text: goalText,
+                                        completed: false,
+                                        createdAt: new Date().toISOString()
+                                    }
+                                ]
+                            }
+                        }
+                    };
+                });
+            },
+
+            /**
+             * Toggle goal completion status
+             */
+            toggleGoal: (domainId, goalId) => {
+                set(state => {
+                    const domain = state.domains[domainId];
+                    const currentGoals = domain.goals || [];
+
+                    return {
+                        domains: {
+                            ...state.domains,
+                            [domainId]: {
+                                ...domain,
+                                goals: currentGoals.map(goal =>
+                                    goal.id === goalId
+                                        ? { ...goal, completed: !goal.completed }
+                                        : goal
+                                )
+                            }
+                        }
+                    };
+                });
+            },
+
+            /**
+             * Delete a goal from a domain
+             */
+            deleteGoal: (domainId, goalId) => {
+                set(state => {
+                    const domain = state.domains[domainId];
+                    const currentGoals = domain.goals || [];
+
+                    return {
+                        domains: {
+                            ...state.domains,
+                            [domainId]: {
+                                ...domain,
+                                goals: currentGoals.filter(goal => goal.id !== goalId)
+                            }
+                        }
+                    };
                 });
             },
 

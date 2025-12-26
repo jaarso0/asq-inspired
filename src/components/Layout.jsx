@@ -33,7 +33,7 @@ export default function Layout({ children }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         {/* Left side: Hamburger + Logo */}
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-3 sm:space-x-4">
                             {/* Hamburger Menu */}
                             <button
                                 onClick={() => setSidebarOpen(true)}
@@ -58,15 +58,18 @@ export default function Layout({ children }) {
                             {/* Logo */}
                             <Link to="/" className="flex items-center space-x-2">
                                 <span className="text-2xl">🌱</span>
-                                <div>
+                                <div className="hidden sm:block">
                                     <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-50 transition-colors">Human 3.0</h1>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 transition-colors">Personal Development</p>
+                                </div>
+                                <div className="sm:hidden">
+                                    <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-50 transition-colors">Human 3.0</h1>
                                 </div>
                             </Link>
                         </div>
 
-                        {/* Navigation */}
-                        <nav className="flex space-x-1">
+                        {/* Navigation - Hidden on mobile, visible on md+ */}
+                        <nav className="hidden md:flex space-x-1">
                             {navItems.map(item => (
                                 <Link
                                     key={item.path}
