@@ -1,14 +1,11 @@
-import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { DOMAINS } from '../data/domainConfig';
 import RadarChart from '../components/RadarChart';
 import Timeline from '../components/Timeline';
-import HabitTracker90Day from '../components/HabitTracker90Day';
 import { calculateHabitCompletionRate } from '../utils/levelProgression';
 
 export default function Progress() {
     const domains = useStore(state => state.domains);
-    const [selectedDomain, setSelectedDomain] = useState(null);
 
     return (
         <div className="space-y-8">
@@ -25,7 +22,7 @@ export default function Progress() {
             {/* Radar Chart */}
             <RadarChart domains={domains} />
 
-            {/* Progress Bars with Habit Tracker Buttons */}
+            {/* Progress Bars */}
             <div className="card">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                     Habit Completion (Last 30 Days)
@@ -46,17 +43,9 @@ export default function Progress() {
                                             {domainConfig.name}
                                         </span>
                                     </div>
-                                    <div className="flex items-center space-x-3">
-                                        <span className="text-sm font-medium text-gray-600">
-                                            {completionRate}%
-                                        </span>
-                                        <button
-                                            onClick={() => setSelectedDomain(domain.id)}
-                                            className="btn-secondary text-sm py-1 px-3"
-                                        >
-                                            📊 Habit Tracker
-                                        </button>
-                                    </div>
+                                    <span className="text-sm font-medium text-gray-600">
+                                        {completionRate}%
+                                    </span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                                     <div
@@ -95,31 +84,6 @@ export default function Progress() {
                     );
                 })}
             </div>
-
-            {/* Habit Tracker Modal */}
-            {selectedDomain && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-                    <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                                <span className="text-3xl">{DOMAINS[selectedDomain].icon}</span>
-                                <h2 className="text-2xl font-bold text-gray-900">
-                                    {DOMAINS[selectedDomain].name} Habit Tracker
-                                </h2>
-                            </div>
-                            <button
-                                onClick={() => setSelectedDomain(null)}
-                                className="text-gray-400 hover:text-gray-600 text-2xl"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        <div className="p-6">
-                            <HabitTracker90Day domainId={selectedDomain} />
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

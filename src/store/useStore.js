@@ -49,6 +49,7 @@ export const useStore = create(
             focusDomains: [], // Array of up to 2 focus domains
             weeklyIntegrations: [],
             cycleStartDate: getToday(), // 90-day cycle start date (persists in localStorage)
+            theme: 'light', // 'light' or 'dark'
 
             // Actions
 
@@ -381,6 +382,28 @@ export const useStore = create(
                 const weekStart = formatDate(getCurrentWeekStart());
 
                 return state.weeklyIntegrations.find(wi => wi.weekStartDate === weekStart);
+            },
+
+            /**
+             * Reset all data to initial state
+             * This clears all habits, progress, levels, reflections, and resets all domains
+             */
+            resetAllData: () => {
+                set({
+                    domains: initializeDomains(),
+                    focusDomains: [],
+                    weeklyIntegrations: [],
+                    cycleStartDate: getToday()
+                });
+            },
+
+            /**
+             * Toggle between light and dark theme
+             */
+            toggleTheme: () => {
+                set(state => ({
+                    theme: state.theme === 'light' ? 'dark' : 'light'
+                }));
             }
         }),
         {
