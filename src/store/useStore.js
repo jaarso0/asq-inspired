@@ -357,6 +357,31 @@ export const useStore = create(
             },
 
             /**
+             * Reorder habits within a domain
+             */
+            reorderHabits: (domainId, oldIndex, newIndex) => {
+                set(state => {
+                    const domain = state.domains[domainId];
+                    const habits = [...domain.habits];
+
+                    // Remove the habit from old position
+                    const [movedHabit] = habits.splice(oldIndex, 1);
+                    // Insert it at new position
+                    habits.splice(newIndex, 0, movedHabit);
+
+                    return {
+                        domains: {
+                            ...state.domains,
+                            [domainId]: {
+                                ...domain,
+                                habits
+                            }
+                        }
+                    };
+                });
+            },
+
+            /**
              * Reset the 90-day cycle to start from today
              * This does NOT delete habit data, just resets the cycle window
              */

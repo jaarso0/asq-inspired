@@ -104,6 +104,18 @@ export function isCurrentDay(cycleStartDate, dayIndex) {
 }
 
 /**
+ * Check if a day index represents a past day.
+ * 
+ * @param {string} cycleStartDate - YYYY-MM-DD format
+ * @param {number} dayIndex - Day index (0-89)
+ * @returns {boolean} True if the day is in the past
+ */
+export function isPastDay(cycleStartDate, dayIndex) {
+    const currentDayIndex = getCurrentDayIndex(cycleStartDate);
+    return dayIndex < currentDayIndex;
+}
+
+/**
  * Format a day index for display (e.g., "Day 1", "Day 45")
  * 
  * @param {number} dayIndex - Day index (0-89)
@@ -111,4 +123,21 @@ export function isCurrentDay(cycleStartDate, dayIndex) {
  */
 export function formatDayLabel(dayIndex) {
     return `Day ${dayIndex + 1}`;
+}
+
+/**
+ * Format a date string with day of week and month/date
+ * 
+ * @param {string} dateString - Date in YYYY-MM-DD format
+ * @returns {object} Object with dayOfWeek (e.g., "Mon") and monthDate (e.g., "Dec 27")
+ */
+export function formatDateWithDay(dateString) {
+    const date = new Date(dateString);
+    const dayOfWeek = format(date, 'EEE'); // Mon, Tue, Wed, etc.
+    const monthDate = format(date, 'MMM d'); // Dec 27, Jan 1, etc.
+
+    return {
+        dayOfWeek,
+        monthDate
+    };
 }
