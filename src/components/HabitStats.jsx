@@ -6,10 +6,13 @@ import { useStore } from '../store/useStore';
 export default function HabitStats({ habits, cycleStartDate, domainId }) {
     const [newGoal, setNewGoal] = useState('');
     const [goalsExpanded, setGoalsExpanded] = useState(true);
+    const [editingGoalId, setEditingGoalId] = useState(null);
+    const [editingGoalText, setEditingGoalText] = useState('');
     const goals = useStore(state => state.domains[domainId]?.goals || []);
     const addGoal = useStore(state => state.addGoal);
     const toggleGoal = useStore(state => state.toggleGoal);
     const deleteGoal = useStore(state => state.deleteGoal);
+    const editGoal = useStore(state => state.editGoal);
 
     // Calculate statistics
     const stats = useMemo(() => {
@@ -52,6 +55,32 @@ export default function HabitStats({ habits, cycleStartDate, domainId }) {
         if (newGoal.trim()) {
             addGoal(domainId, newGoal.trim());
             setNewGoal('');
+        }
+    };
+
+    const handleStartEdit = (goal) => {
+        setEditingGoalId(goal.id);
+        setEditingGoalText(goal.text);
+    };
+
+    const handleSaveEdit = () => {
+        if (editingGoalText.trim() && editingGoalId) {
+            editGoal(domainId, editingGoalId, editingGoalText.trim());
+            setEditingGoalId(null);
+            setEditingGoalText('');
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingGoalId(null);
+        setEditingGoalText('');
+    };
+
+    const handleEditKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSaveEdit();
+        } else if (e.key === 'Escape') {
+            handleCancelEdit();
         }
     };
 
@@ -174,22 +203,59 @@ export default function HabitStats({ habits, cycleStartDate, domainId }) {
                                                 checked={goal.completed}
                                                 onChange={() => toggleGoal(domainId, goal.id)}
                                                 className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800"
+                                                disabled={editingGoalId === goal.id}
                                             />
-                                            <span
-                                                className={`flex-1 text-sm ${goal.completed
-                                                        ? 'line-through text-gray-400 dark:text-gray-500'
-                                                        : 'text-gray-700 dark:text-gray-300'
-                                                    }`}
-                                            >
-                                                {goal.text}
-                                            </span>
-                                            <button
-                                                onClick={() => deleteGoal(domainId, goal.id)}
-                                                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs"
-                                                aria-label="Delete goal"
-                                            >
-                                                ✕
-                                            </button>
+                                            {editingGoalId === goal.id ? (
+                                                <>
+                                                    <input
+                                                        type="text"
+                                                        value={editingGoalText}
+                                                        onChange={(e) => setEditingGoalText(e.target.value)}
+                                                        onKeyDown={handleEditKeyDown}
+                                                        className="flex-1 text-sm px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        autoFocus
+                                                    />
+                                                    <button
+                                                        onClick={handleSaveEdit}
+                                                        className="text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 text-xs"
+                                                        aria-label="Save edit"
+                                                    >
+                                                        ✓
+                                                    </button>
+                                                    <button
+                                                        onClick={handleCancelEdit}
+                                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-xs"
+                                                        aria-label="Cancel edit"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span
+                                                        className={`flex-1 text-sm ${goal.completed
+                                                            ? 'line-through text-gray-400 dark:text-gray-500'
+                                                            : 'text-gray-700 dark:text-gray-300'
+                                                            }`}
+                                                    >
+                                                        {goal.text}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleStartEdit(goal)}
+                                                        className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-xs"
+                                                        aria-label="Edit goal"
+                                                    >
+                                                        ✎
+                                                    </button>
+                                                    <button
+                                                        onClick={() => deleteGoal(domainId, goal.id)}
+                                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs"
+                                                        aria-label="Delete goal"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     ))
                                 )}

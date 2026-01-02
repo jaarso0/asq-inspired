@@ -497,6 +497,30 @@ export const useStore = create(
             },
 
             /**
+             * Edit a goal's text in a domain
+             */
+            editGoal: (domainId, goalId, newText) => {
+                set(state => {
+                    const domain = state.domains[domainId];
+                    const currentGoals = domain.goals || [];
+
+                    return {
+                        domains: {
+                            ...state.domains,
+                            [domainId]: {
+                                ...domain,
+                                goals: currentGoals.map(goal =>
+                                    goal.id === goalId
+                                        ? { ...goal, text: newText }
+                                        : goal
+                                )
+                            }
+                        }
+                    };
+                });
+            },
+
+            /**
              * Toggle between light and dark theme
              */
             toggleTheme: () => {
