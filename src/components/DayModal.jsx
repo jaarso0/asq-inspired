@@ -34,6 +34,11 @@ export default function DayModal({ date, onClose }) {
     const [newNoteStyle, setNewNoteStyle] = useState('filled');
     const [showColorWheel, setShowColorWheel] = useState(false);
 
+    // Last used custom color (persisted in localStorage)
+    const [lastCustomColor, setLastCustomColor] = useState(() => {
+        return localStorage.getItem('dayNotes_lastCustomColor') || null;
+    });
+
     // State for editing existing note
     const [editingNoteId, setEditingNoteId] = useState(null);
     const [editText, setEditText] = useState('');
@@ -53,6 +58,14 @@ export default function DayModal({ date, onClose }) {
             // Encode style in color string (color:style format)
             const colorWithStyle = `${newNoteColor}:${newNoteStyle}`;
             addDayNote(date, newNoteText.trim(), colorWithStyle);
+
+            // Save custom color if not a preset
+            const isPreset = COLOR_OPTIONS.some(c => c.value === newNoteColor);
+            if (!isPreset) {
+                setLastCustomColor(newNoteColor);
+                localStorage.setItem('dayNotes_lastCustomColor', newNoteColor);
+            }
+
             setNewNoteText('');
             setNewNoteColor(COLOR_OPTIONS[0].value);
             setNewNoteStyle('filled');
@@ -80,6 +93,14 @@ export default function DayModal({ date, onClose }) {
         if (editText.trim() && editingNoteId) {
             const colorWithStyle = `${editColor}:${editStyle}`;
             editDayNote(date, editingNoteId, editText.trim(), colorWithStyle);
+
+            // Save custom color if not a preset
+            const isPreset = COLOR_OPTIONS.some(c => c.value === editColor);
+            if (!isPreset) {
+                setLastCustomColor(editColor);
+                localStorage.setItem('dayNotes_lastCustomColor', editColor);
+            }
+
             setEditingNoteId(null);
             setEditText('');
             setEditColor('');
@@ -150,8 +171,8 @@ export default function DayModal({ date, onClose }) {
                             key={style.value}
                             onClick={() => onStyleChange(style.value)}
                             className={`px-3 py-1 text-xs rounded-full transition-all ${selectedStyle === style.value
-                                    ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900'
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                                 }`}
                         >
                             {style.name}
@@ -167,8 +188,8 @@ export default function DayModal({ date, onClose }) {
                         key={color.value}
                         onClick={() => onColorChange(color.value)}
                         className={`w-7 h-7 rounded-full transition-all transform hover:scale-110 ${selectedColor === color.value
-                                ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900 scale-110'
-                                : ''
+                            ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900 scale-110'
+                            : ''
                             }`}
                         style={selectedStyle === 'hollow'
                             ? { border: `3px solid ${color.value}`, backgroundColor: 'transparent' }
@@ -178,12 +199,30 @@ export default function DayModal({ date, onClose }) {
                     />
                 ))}
 
+                {/* Last used custom color */}
+                {lastCustomColor && (
+                    <button
+                        onClick={() => onColorChange(lastCustomColor)}
+                        className={`w-7 h-7 rounded-full transition-all transform hover:scale-110 relative ${selectedColor === lastCustomColor
+                            ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900 scale-110'
+                            : ''
+                            }`}
+                        style={selectedStyle === 'hollow'
+                            ? { border: `3px solid ${lastCustomColor}`, backgroundColor: 'transparent' }
+                            : { backgroundColor: lastCustomColor }
+                        }
+                        title={`Last used: ${lastCustomColor}`}
+                    >
+                        <span className="absolute -top-1 -right-1 text-[8px] bg-gray-700 text-white rounded-full w-3 h-3 flex items-center justify-center">⏱</span>
+                    </button>
+                )}
+
                 {/* Color wheel toggle */}
                 <button
                     onClick={() => setShowWheel(!showWheel)}
                     className={`w-7 h-7 rounded-full transition-all transform hover:scale-110 flex items-center justify-center text-xs ${showWheel
-                            ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900 scale-110'
-                            : ''
+                        ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900 scale-110'
+                        : ''
                         }`}
                     style={{
                         background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)'
