@@ -10,14 +10,22 @@ import {
     format,
     addMonths,
     subMonths,
+    addDays,
     isToday,
-    isSameMonth
+    isSameMonth,
+    isSameDay,
+    parseISO
 } from 'date-fns';
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
     const calendarNotes = useStore(state => state.calendarNotes);
+    const cycleStartDate = useStore(state => state.cycleStartDate);
+
+    // Calculate 90-day cycle dates
+    const cycleStart = cycleStartDate ? parseISO(cycleStartDate) : null;
+    const cycleEnd = cycleStart ? addDays(cycleStart, 89) : null; // 90 days total (day 0 to day 89)
 
     // Generate calendar days for the current month view
     const monthStart = startOfMonth(currentDate);
@@ -93,6 +101,8 @@ export default function Calendar() {
                         const dayNotes = calendarNotes[dateKey] || [];
                         const isCurrentMonth = isSameMonth(day, currentDate);
                         const isTodayDate = isToday(day);
+                        const isCycleStart = cycleStart && isSameDay(day, cycleStart);
+                        const isCycleEnd = cycleEnd && isSameDay(day, cycleEnd);
 
                         return (
                             <button
@@ -105,17 +115,29 @@ export default function Calendar() {
                                     ${index % 7 === 6 ? 'border-r-0' : ''}
                                 `}
                             >
-                                {/* Day number */}
-                                <div className={`
-                                    flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium mb-1
-                                    ${isTodayDate
-                                        ? 'bg-blue-600 text-white'
-                                        : isCurrentMonth
-                                            ? 'text-gray-900 dark:text-gray-100'
-                                            : 'text-gray-400 dark:text-gray-600'
-                                    }
-                                `}>
-                                    {format(day, 'd')}
+                                {/* Day number with cycle indicators */}
+                                <div className="relative">
+                                    {/* Hollow circle for cycle start (green) or end (red) */}
+                                    {(isCycleStart || isCycleEnd) && (
+                                        <div
+                                            className={`absolute inset-0 w-8 h-8 rounded-full border-2 ${isCycleStart
+                                                    ? 'border-green-500'
+                                                    : 'border-red-500'
+                                                }`}
+                                            title={isCycleStart ? '90-Day Challenge Start' : '90-Day Challenge End'}
+                                        />
+                                    )}
+                                    <div className={`
+                                        flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium
+                                        ${isTodayDate
+                                            ? 'bg-blue-600 text-white'
+                                            : isCurrentMonth
+                                                ? 'text-gray-900 dark:text-gray-100'
+                                                : 'text-gray-400 dark:text-gray-600'
+                                        }
+                                    `}>
+                                        {format(day, 'd')}
+                                    </div>
                                 </div>
 
                                 {/* Notes preview - now shows multiple colored notes */}
