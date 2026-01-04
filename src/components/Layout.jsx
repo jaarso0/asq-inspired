@@ -17,12 +17,6 @@ export default function Layout({ children }) {
         }
     }, [theme]);
 
-    const navItems = [
-        { path: '/', label: 'Dashboard' },
-        { path: '/progress', label: 'Progress' },
-        { path: '/habit-tracker', label: 'Habit Tracker' }
-    ];
-
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors">
             {/* Sidebar */}
@@ -68,21 +62,20 @@ export default function Layout({ children }) {
                             </Link>
                         </div>
 
-                        {/* Navigation - Hidden on mobile, visible on md+ */}
-                        <nav className="hidden md:flex items-center space-x-1">
-                            {navItems.map(item => (
-                                <Link
-                                    key={item.path}
-                                    to={item.path}
-                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === item.path
-                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50'
-                                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
-                                        }`}
-                                >
-                                    {item.label}
-                                </Link>
-                            ))}
-                            {/* Calendar Icon Button */}
+                        {/* Right side: Icon Navigation - Visible on all screen sizes */}
+                        <nav className="flex items-center space-x-2">
+                            {/* Habit Tracker Icon */}
+                            <Link
+                                to="/habit-tracker"
+                                className={`p-2 rounded-md text-xl transition-colors ${location.pathname === '/habit-tracker'
+                                    ? 'bg-gray-100 dark:bg-gray-800'
+                                    : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                title="Habit Tracker"
+                            >
+                                ✅
+                            </Link>
+                            {/* Calendar Icon */}
                             <Link
                                 to="/calendar"
                                 className={`p-2 rounded-md text-xl transition-colors ${location.pathname === '/calendar'

@@ -51,7 +51,8 @@ export const useStore = create(
             weeklyIntegrations: [],
             cycleStartDate: getToday(), // 90-day cycle start date (persists in localStorage)
             theme: 'light', // 'light' or 'dark'
-            calendarNotes: {}, // { "YYYY-MM-DD": { note: string, color: string } }
+            calendarNotes: {}, // { "YYYY-MM-DD": [{ id, text, color }] }
+            dailyTodos: {}, // { "YYYY-MM-DD": [{ id, text, completed }] } - keeps 7 days
 
             // Actions
 
@@ -580,6 +581,79 @@ export const useStore = create(
                 set(state => ({
                     theme: state.theme === 'light' ? 'dark' : 'light'
                 }));
+            },
+
+            /**
+             * Add a todo item for a specific date
+             */
+            addTodo: (date, text) => {
+                set(state => {
+                    const existingTodos = state.dailyTodos[date] || [];
+                    return {
+                        dailyTodos: {
+                            ...state.dailyTodos,
+                            [date]: [...existingTodos, { id: Date.now().toString(), text, completed: false }]
+                        }
+                    };
+                });
+            },
+
+            /**
+             * Toggle todo completion status
+             */
+            toggleTodo: (date, todoId) => {
+                set(state => {
+                    const existingTodos = state.dailyTodos[date] || [];
+                    return {
+                        dailyTodos: {
+                            ...state.dailyTodos,
+                            [date]: existingTodos.map(todo =>
+                                todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
+                            )
+                        }
+                    };
+                });
+            },
+
+            /**
+             * Remove a todo item
+             */
+            removeTodo: (date, todoId) => {
+                set(state => {
+                    const existingTodos = state.dailyTodos[date] || [];
+                    const updatedTodos = existingTodos.filter(todo => todo.id !== todoId);
+                    if (updatedTodos.length === 0) {
+                        const { [date]: removed, ...rest } = state.dailyTodos;
+                        return { dailyTodos: rest };
+                    }
+                    return {
+                        dailyTodos: {
+                            ...state.dailyTodos,
+                            [date]: updatedTodos
+                        }
+                    };
+                });
+            },
+
+            /**
+             * Clean up todos older than 7 days
+             */
+            cleanOldTodos: () => {
+                set(state => {
+                    const today = new Date();
+                    const sevenDaysAgo = new Date(today);
+                    sevenDaysAgo.setDate(today.getDate() - 7);
+
+                    const cleanedTodos = {};
+                    Object.entries(state.dailyTodos).forEach(([date, todos]) => {
+                        const todoDate = new Date(date);
+                        if (todoDate >= sevenDaysAgo) {
+                            cleanedTodos[date] = todos;
+                        }
+                    });
+
+                    return { dailyTodos: cleanedTodos };
+                });
             }
         }),
         {

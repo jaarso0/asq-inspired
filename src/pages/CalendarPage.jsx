@@ -1,4 +1,5 @@
 import Calendar from '../components/Calendar';
+import TodoList from '../components/TodoList';
 
 export default function CalendarPage() {
     return (
@@ -11,7 +12,19 @@ export default function CalendarPage() {
                     Click on any day to add notes and highlight with colors
                 </p>
             </div>
-            <Calendar />
+
+            {/* Grid layout: Calendar + TodoList */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Calendar - takes 2 columns on large screens */}
+                <div className="lg:col-span-2">
+                    <Calendar />
+                </div>
+
+                {/* TodoList - takes 1 column on large screens */}
+                <div>
+                    <TodoList />
+                </div>
+            </div>
         </div>
     );
 }

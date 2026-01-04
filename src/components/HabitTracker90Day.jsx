@@ -252,15 +252,16 @@ function MobileSortableHabitRow({ habit, habitIndex, domainId, allDates, cycleSt
         >
             {/* Sticky habit name cell */}
             <td className="sticky left-0 z-10 border-r-2 border-gray-200 dark:border-gray-700 px-2 py-2 bg-inherit">
-                <div className="flex items-center gap-1.5 min-w-[100px] max-w-[120px]">
-                    {/* Drag Handle */}
+                <div className="flex items-center gap-1.5 min-w-[100px] max-w-[130px]">
+                    {/* Drag Handle - Larger touch target for mobile */}
                     <button
                         {...attributes}
                         {...listeners}
-                        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
-                        title="Drag to reorder"
+                        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 p-1.5 -m-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600"
+                        style={{ touchAction: 'none' }}
+                        title="Hold and drag to reorder"
                     >
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                             <circle cx="4" cy="4" r="1.5" />
                             <circle cx="4" cy="8" r="1.5" />
                             <circle cx="4" cy="12" r="1.5" />
@@ -416,13 +417,6 @@ export default function HabitTracker90Day({ domainId }) {
                     + Add Habit
                 </button>
             </div>
-
-            {/* Statistics Panel */}
-            <HabitStats
-                habits={domain.habits}
-                cycleStartDate={cycleStartDate}
-                domainId={domainId}
-            />
 
             {/* 90-Day Grid - Desktop View (hidden on mobile) */}
             <div className="card overflow-hidden hidden md:block">
@@ -596,6 +590,13 @@ export default function HabitTracker90Day({ domainId }) {
                     </div>
                 </div>
             </div>
+
+            {/* Statistics Panel - Moved below the habit checklist */}
+            <HabitStats
+                habits={domain.habits}
+                cycleStartDate={cycleStartDate}
+                domainId={domainId}
+            />
 
             {/* Calm reminder */}
             <p className="text-xs text-gray-500 italic text-center">
