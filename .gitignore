@@ -1,2 +1,11 @@
 **/node_modules
 **/dist/
+
+# Environment variables (contains secrets!)
+.env
+.env.local
+.env.*.local
+
+# Netlify Functions dependencies (installed separately)
+netlify/functions/node_modules/
+netlify/functions/package-lock.json

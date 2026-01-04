@@ -2,11 +2,17 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useStore } from '../store/useStore';
+import { useAuth } from '../contexts/AuthContext';
+import SyncStatus from './SyncStatus';
+import AuthModal from './AuthModal';
 
 export default function Layout({ children }) {
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [authModalOpen, setAuthModalOpen] = useState(false);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
     const theme = useStore(state => state.theme);
+    const { user, isAuthenticated, logout } = useAuth();
 
     // Apply theme to document
     useEffect(() => {
@@ -17,8 +23,22 @@ export default function Layout({ children }) {
         }
     }, [theme]);
 
+    // Close user menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (userMenuOpen && !e.target.closest('.user-menu-container')) {
+                setUserMenuOpen(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [userMenuOpen]);
+
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950 transition-colors">
+            {/* Auth Modal */}
+            <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+
             {/* Sidebar */}
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
@@ -62,8 +82,11 @@ export default function Layout({ children }) {
                             </Link>
                         </div>
 
-                        {/* Right side: Icon Navigation - Visible on all screen sizes */}
+                        {/* Right side: Icon Navigation + User Menu */}
                         <nav className="flex items-center space-x-2">
+                            {/* Sync Status */}
+                            <SyncStatus />
+
                             {/* Habit Tracker Icon */}
                             <Link
                                 to="/habit-tracker"
@@ -86,6 +109,64 @@ export default function Layout({ children }) {
                             >
                                 📅
                             </Link>
+
+                            {/* User Menu */}
+                            <div className="relative user-menu-container">
+                                {isAuthenticated ? (
+                                    <>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setUserMenuOpen(!userMenuOpen);
+                                            }}
+                                            className="flex items-center justify-center w-8 h-8 rounded-full 
+                                                     bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-medium
+                                                     hover:from-indigo-600 hover:to-purple-600 transition-all"
+                                            title={user?.email}
+                                        >
+                                            {user?.email?.charAt(0).toUpperCase() || 'U'}
+                                        </button>
+
+                                        {/* Dropdown Menu */}
+                                        {userMenuOpen && (
+                                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg 
+                                                          border border-gray-200 dark:border-gray-700 py-1 z-50">
+                                                <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                                                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                        {user?.email}
+                                                    </p>
+                                                    <p className="text-xs text-green-600 dark:text-green-400">
+                                                        Cloud sync enabled
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        logout();
+                                                        setUserMenuOpen(false);
+                                                    }}
+                                                    className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 
+                                                             hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                                >
+                                                    Sign out
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <button
+                                        onClick={() => setAuthModalOpen(true)}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
+                                                 bg-gradient-to-r from-indigo-500 to-purple-500 text-white
+                                                 hover:from-indigo-600 hover:to-purple-600 transition-all"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                                        </svg>
+                                        <span className="hidden sm:inline">Sync</span>
+                                    </button>
+                                )}
+                            </div>
                         </nav>
                     </div>
                 </div>
@@ -109,3 +190,4 @@ export default function Layout({ children }) {
         </div>
     );
 }
+
