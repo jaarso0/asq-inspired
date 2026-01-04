@@ -5,6 +5,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
     const menuItems = [
         { path: '/', label: 'Dashboard', icon: '🏠' },
+        { path: '/calendar', label: 'Calendar', icon: '📅' },
         { path: '/progress', label: 'Progress', icon: '📊' },
         { path: '/habit-tracker', label: 'Habit Tracker', icon: '✅' },
         { path: '/settings', label: 'Settings', icon: '⚙️' }

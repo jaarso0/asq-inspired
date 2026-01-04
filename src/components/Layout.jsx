@@ -69,7 +69,7 @@ export default function Layout({ children }) {
                         </div>
 
                         {/* Navigation - Hidden on mobile, visible on md+ */}
-                        <nav className="hidden md:flex space-x-1">
+                        <nav className="hidden md:flex items-center space-x-1">
                             {navItems.map(item => (
                                 <Link
                                     key={item.path}
@@ -82,6 +82,17 @@ export default function Layout({ children }) {
                                     {item.label}
                                 </Link>
                             ))}
+                            {/* Calendar Icon Button */}
+                            <Link
+                                to="/calendar"
+                                className={`p-2 rounded-md text-xl transition-colors ${location.pathname === '/calendar'
+                                    ? 'bg-gray-100 dark:bg-gray-800'
+                                    : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    }`}
+                                title="Calendar"
+                            >
+                                📅
+                            </Link>
                         </nav>
                     </div>
                 </div>

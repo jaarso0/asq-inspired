@@ -5,6 +5,7 @@ import DomainDetail from './pages/DomainDetail';
 import Progress from './pages/Progress';
 import HabitTracker from './pages/HabitTracker';
 import Settings from './pages/Settings';
+import CalendarPage from './pages/CalendarPage';
 
 function App() {
     return (
@@ -12,6 +13,7 @@ function App() {
             <Layout>
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
+                    <Route path="/calendar" element={<CalendarPage />} />
                     <Route path="/domain/:domainId" element={<DomainDetail />} />
                     <Route path="/progress" element={<Progress />} />
                     <Route path="/habit-tracker" element={<HabitTracker />} />

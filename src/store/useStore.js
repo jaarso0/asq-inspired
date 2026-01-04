@@ -51,6 +51,7 @@ export const useStore = create(
             weeklyIntegrations: [],
             cycleStartDate: getToday(), // 90-day cycle start date (persists in localStorage)
             theme: 'light', // 'light' or 'dark'
+            calendarNotes: {}, // { "YYYY-MM-DD": { note: string, color: string } }
 
             // Actions
 
@@ -515,6 +516,58 @@ export const useStore = create(
                                         : goal
                                 )
                             }
+                        }
+                    };
+                });
+            },
+
+            /**
+             * Add a note to a day (supports multiple notes per day)
+             */
+            addDayNote: (date, text, color) => {
+                set(state => {
+                    const existingNotes = state.calendarNotes[date] || [];
+                    return {
+                        calendarNotes: {
+                            ...state.calendarNotes,
+                            [date]: [...existingNotes, { id: Date.now().toString(), text, color }]
+                        }
+                    };
+                });
+            },
+
+            /**
+             * Edit a specific note within a day
+             */
+            editDayNote: (date, noteId, text, color) => {
+                set(state => {
+                    const existingNotes = state.calendarNotes[date] || [];
+                    return {
+                        calendarNotes: {
+                            ...state.calendarNotes,
+                            [date]: existingNotes.map(note =>
+                                note.id === noteId ? { ...note, text, color } : note
+                            )
+                        }
+                    };
+                });
+            },
+
+            /**
+             * Remove a specific note from a day
+             */
+            removeDayNote: (date, noteId) => {
+                set(state => {
+                    const existingNotes = state.calendarNotes[date] || [];
+                    const updatedNotes = existingNotes.filter(note => note.id !== noteId);
+                    if (updatedNotes.length === 0) {
+                        const { [date]: removed, ...rest } = state.calendarNotes;
+                        return { calendarNotes: rest };
+                    }
+                    return {
+                        calendarNotes: {
+                            ...state.calendarNotes,
+                            [date]: updatedNotes
                         }
                     };
                 });
