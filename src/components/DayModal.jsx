@@ -2,12 +2,22 @@ import { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 
 const COLOR_OPTIONS = [
-    { name: 'Red', value: '#ef4444', bg: 'bg-red-500' },
-    { name: 'Orange', value: '#f97316', bg: 'bg-orange-500' },
-    { name: 'Yellow', value: '#eab308', bg: 'bg-yellow-500' },
-    { name: 'Green', value: '#22c55e', bg: 'bg-green-500' },
-    { name: 'Blue', value: '#3b82f6', bg: 'bg-blue-500' },
-    { name: 'Purple', value: '#a855f7', bg: 'bg-purple-500' }
+    { name: 'Red', value: '#ef4444' },
+    { name: 'Orange', value: '#f97316' },
+    { name: 'Yellow', value: '#eab308' },
+    { name: 'Green', value: '#22c55e' },
+    { name: 'Teal', value: '#14b8a6' },
+    { name: 'Blue', value: '#3b82f6' },
+    { name: 'Indigo', value: '#6366f1' },
+    { name: 'Purple', value: '#a855f7' },
+    { name: 'Pink', value: '#ec4899' },
+    { name: 'Rose', value: '#f43f5e' }
+];
+
+// Style options: filled or hollow
+const STYLE_OPTIONS = [
+    { name: 'Filled', value: 'filled' },
+    { name: 'Hollow', value: 'hollow' }
 ];
 
 export default function DayModal({ date, onClose }) {
@@ -21,11 +31,14 @@ export default function DayModal({ date, onClose }) {
     // State for new note input
     const [newNoteText, setNewNoteText] = useState('');
     const [newNoteColor, setNewNoteColor] = useState(COLOR_OPTIONS[0].value);
+    const [newNoteStyle, setNewNoteStyle] = useState('filled');
+    const [showColorWheel, setShowColorWheel] = useState(false);
 
     // State for editing existing note
     const [editingNoteId, setEditingNoteId] = useState(null);
     const [editText, setEditText] = useState('');
     const [editColor, setEditColor] = useState('');
+    const [editStyle, setEditStyle] = useState('filled');
 
     // Format date for display
     const displayDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
@@ -37,9 +50,13 @@ export default function DayModal({ date, onClose }) {
 
     const handleAddNote = () => {
         if (newNoteText.trim()) {
-            addDayNote(date, newNoteText.trim(), newNoteColor);
+            // Encode style in color string (color:style format)
+            const colorWithStyle = `${newNoteColor}:${newNoteStyle}`;
+            addDayNote(date, newNoteText.trim(), colorWithStyle);
             setNewNoteText('');
             setNewNoteColor(COLOR_OPTIONS[0].value);
+            setNewNoteStyle('filled');
+            setShowColorWheel(false);
         }
     };
 
@@ -53,15 +70,20 @@ export default function DayModal({ date, onClose }) {
     const startEditing = (note) => {
         setEditingNoteId(note.id);
         setEditText(note.text);
-        setEditColor(note.color);
+        // Parse color:style format
+        const [color, style] = parseColorStyle(note.color);
+        setEditColor(color);
+        setEditStyle(style);
     };
 
     const saveEdit = () => {
         if (editText.trim() && editingNoteId) {
-            editDayNote(date, editingNoteId, editText.trim(), editColor);
+            const colorWithStyle = `${editColor}:${editStyle}`;
+            editDayNote(date, editingNoteId, editText.trim(), colorWithStyle);
             setEditingNoteId(null);
             setEditText('');
             setEditColor('');
+            setEditStyle('filled');
         }
     };
 
@@ -69,10 +91,36 @@ export default function DayModal({ date, onClose }) {
         setEditingNoteId(null);
         setEditText('');
         setEditColor('');
+        setEditStyle('filled');
     };
 
     const handleDelete = (noteId) => {
         removeDayNote(date, noteId);
+    };
+
+    // Parse color:style format, default to filled if no style
+    const parseColorStyle = (colorString) => {
+        if (colorString && colorString.includes(':')) {
+            const [color, style] = colorString.split(':');
+            return [color, style];
+        }
+        return [colorString || COLOR_OPTIONS[0].value, 'filled'];
+    };
+
+    // Get note style classes/styles
+    const getNoteStyles = (colorString) => {
+        const [color, style] = parseColorStyle(colorString);
+        if (style === 'hollow') {
+            return {
+                backgroundColor: 'transparent',
+                border: `2px solid ${color}`,
+                borderLeft: `4px solid ${color}`
+            };
+        }
+        return {
+            backgroundColor: color + '20',
+            borderLeft: `4px solid ${color}`
+        };
     };
 
     // Close on Escape key
@@ -89,6 +137,95 @@ export default function DayModal({ date, onClose }) {
         window.addEventListener('keydown', handleEscape);
         return () => window.removeEventListener('keydown', handleEscape);
     }, [onClose, editingNoteId]);
+
+    // Color picker component
+    const ColorPicker = ({ selectedColor, onColorChange, selectedStyle, onStyleChange, showWheel, setShowWheel }) => (
+        <div className="space-y-3">
+            {/* Style toggle */}
+            <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Style:</span>
+                <div className="flex gap-1">
+                    {STYLE_OPTIONS.map(style => (
+                        <button
+                            key={style.value}
+                            onClick={() => onStyleChange(style.value)}
+                            className={`px-3 py-1 text-xs rounded-full transition-all ${selectedStyle === style.value
+                                    ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                }`}
+                        >
+                            {style.name}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Preset colors */}
+            <div className="flex gap-2 flex-wrap">
+                {COLOR_OPTIONS.map(color => (
+                    <button
+                        key={color.value}
+                        onClick={() => onColorChange(color.value)}
+                        className={`w-7 h-7 rounded-full transition-all transform hover:scale-110 ${selectedColor === color.value
+                                ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900 scale-110'
+                                : ''
+                            }`}
+                        style={selectedStyle === 'hollow'
+                            ? { border: `3px solid ${color.value}`, backgroundColor: 'transparent' }
+                            : { backgroundColor: color.value }
+                        }
+                        title={color.name}
+                    />
+                ))}
+
+                {/* Color wheel toggle */}
+                <button
+                    onClick={() => setShowWheel(!showWheel)}
+                    className={`w-7 h-7 rounded-full transition-all transform hover:scale-110 flex items-center justify-center text-xs ${showWheel
+                            ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900 scale-110'
+                            : ''
+                        }`}
+                    style={{
+                        background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)'
+                    }}
+                    title="Custom color"
+                >
+                    {showWheel ? '✓' : ''}
+                </button>
+            </div>
+
+            {/* Color wheel input */}
+            {showWheel && (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <input
+                        type="color"
+                        value={selectedColor}
+                        onChange={(e) => onColorChange(e.target.value)}
+                        className="w-12 h-12 rounded-lg cursor-pointer border-0"
+                        title="Pick custom color"
+                    />
+                    <div className="flex-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Custom Color</p>
+                        <input
+                            type="text"
+                            value={selectedColor}
+                            onChange={(e) => onColorChange(e.target.value)}
+                            className="w-full px-2 py-1 text-sm font-mono rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            placeholder="#000000"
+                        />
+                    </div>
+                    {/* Preview */}
+                    <div
+                        className="w-10 h-10 rounded-lg"
+                        style={selectedStyle === 'hollow'
+                            ? { border: `3px solid ${selectedColor}`, backgroundColor: 'transparent' }
+                            : { backgroundColor: selectedColor }
+                        }
+                    />
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <>
@@ -127,74 +264,72 @@ export default function DayModal({ date, onClose }) {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Notes
                                 </label>
-                                {existingNotes.map(note => (
-                                    <div
-                                        key={note.id}
-                                        className="rounded-xl p-3 transition-all"
-                                        style={{ backgroundColor: note.color + '20', borderLeft: `4px solid ${note.color}` }}
-                                    >
-                                        {editingNoteId === note.id ? (
-                                            // Edit mode
-                                            <div className="space-y-3">
-                                                <input
-                                                    type="text"
-                                                    value={editText}
-                                                    onChange={e => setEditText(e.target.value)}
-                                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                    autoFocus
-                                                />
-                                                <div className="flex gap-2 flex-wrap">
-                                                    {COLOR_OPTIONS.map(color => (
+                                {existingNotes.map(note => {
+                                    const [noteColor] = parseColorStyle(note.color);
+                                    return (
+                                        <div
+                                            key={note.id}
+                                            className="rounded-xl p-3 transition-all"
+                                            style={getNoteStyles(note.color)}
+                                        >
+                                            {editingNoteId === note.id ? (
+                                                // Edit mode
+                                                <div className="space-y-3">
+                                                    <input
+                                                        type="text"
+                                                        value={editText}
+                                                        onChange={e => setEditText(e.target.value)}
+                                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        autoFocus
+                                                    />
+                                                    <ColorPicker
+                                                        selectedColor={editColor}
+                                                        onColorChange={setEditColor}
+                                                        selectedStyle={editStyle}
+                                                        onStyleChange={setEditStyle}
+                                                        showWheel={showColorWheel}
+                                                        setShowWheel={setShowColorWheel}
+                                                    />
+                                                    <div className="flex gap-2">
                                                         <button
-                                                            key={color.value}
-                                                            onClick={() => setEditColor(color.value)}
-                                                            className={`w-7 h-7 rounded-full ${color.bg} transition-all transform hover:scale-110 ${editColor === color.value
-                                                                    ? 'ring-2 ring-offset-1 ring-gray-400 dark:ring-offset-gray-900 scale-110'
-                                                                    : ''
-                                                                }`}
-                                                            title={color.name}
-                                                        />
-                                                    ))}
+                                                            onClick={saveEdit}
+                                                            className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                                                        >
+                                                            Save
+                                                        </button>
+                                                        <button
+                                                            onClick={cancelEdit}
+                                                            className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-medium transition-colors"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={saveEdit}
-                                                        className="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                                                    >
-                                                        Save
-                                                    </button>
-                                                    <button
-                                                        onClick={cancelEdit}
-                                                        className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-medium transition-colors"
-                                                    >
-                                                        Cancel
-                                                    </button>
+                                            ) : (
+                                                // Display mode
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <p className="text-gray-800 dark:text-gray-200 flex-1">{note.text}</p>
+                                                    <div className="flex gap-1 flex-shrink-0">
+                                                        <button
+                                                            onClick={() => startEditing(note)}
+                                                            className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
+                                                            title="Edit"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(note.id)}
+                                                            className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            🗑️
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            // Display mode
-                                            <div className="flex items-start justify-between gap-3">
-                                                <p className="text-gray-800 dark:text-gray-200 flex-1">{note.text}</p>
-                                                <div className="flex gap-1 flex-shrink-0">
-                                                    <button
-                                                        onClick={() => startEditing(note)}
-                                                        className="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
-                                                        title="Edit"
-                                                    >
-                                                        ✏️
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(note.id)}
-                                                        className="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
-                                                        title="Delete"
-                                                    >
-                                                        🗑️
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
 
@@ -215,15 +350,18 @@ export default function DayModal({ date, onClose }) {
 
                         {/* Input with color preview */}
                         <div
-                            className="flex gap-2 items-center p-2 rounded-xl border-2 transition-all"
-                            style={{
-                                backgroundColor: newNoteColor + '15',
-                                borderColor: newNoteColor + '50'
-                            }}
+                            className="flex gap-2 items-center p-2 rounded-xl transition-all"
+                            style={newNoteStyle === 'hollow'
+                                ? { border: `2px solid ${newNoteColor}`, backgroundColor: 'transparent' }
+                                : { backgroundColor: newNoteColor + '15', border: `2px solid ${newNoteColor}50` }
+                            }
                         >
                             <div
                                 className="w-4 h-4 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: newNoteColor }}
+                                style={newNoteStyle === 'hollow'
+                                    ? { border: `2px solid ${newNoteColor}`, backgroundColor: 'transparent' }
+                                    : { backgroundColor: newNoteColor }
+                                }
                             />
                             <input
                                 type="text"
@@ -243,19 +381,14 @@ export default function DayModal({ date, onClose }) {
                         </div>
 
                         {/* Color picker */}
-                        <div className="flex gap-2 flex-wrap">
-                            {COLOR_OPTIONS.map(color => (
-                                <button
-                                    key={color.value}
-                                    onClick={() => setNewNoteColor(color.value)}
-                                    className={`w-8 h-8 rounded-full ${color.bg} transition-all transform hover:scale-110 ${newNoteColor === color.value
-                                            ? 'ring-3 ring-offset-2 ring-gray-400 dark:ring-offset-gray-800 scale-110'
-                                            : ''
-                                        }`}
-                                    title={color.name}
-                                />
-                            ))}
-                        </div>
+                        <ColorPicker
+                            selectedColor={newNoteColor}
+                            onColorChange={setNewNoteColor}
+                            selectedStyle={newNoteStyle}
+                            onStyleChange={setNewNoteStyle}
+                            showWheel={showColorWheel}
+                            setShowWheel={setShowColorWheel}
+                        />
                     </div>
                 </div>
             </div>

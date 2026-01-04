@@ -121,8 +121,8 @@ export default function Calendar() {
                                     {(isCycleStart || isCycleEnd) && (
                                         <div
                                             className={`absolute inset-0 w-8 h-8 rounded-full border-2 ${isCycleStart
-                                                    ? 'border-green-500'
-                                                    : 'border-red-500'
+                                                ? 'border-green-500'
+                                                : 'border-red-500'
                                                 }`}
                                             title={isCycleStart ? '90-Day Challenge Start' : '90-Day Challenge End'}
                                         />
@@ -143,19 +143,33 @@ export default function Calendar() {
                                 {/* Notes preview - now shows multiple colored notes */}
                                 {dayNotes && dayNotes.length > 0 && (
                                     <div className="space-y-1 mt-1">
-                                        {dayNotes.slice(0, 3).map(note => (
-                                            <div
-                                                key={note.id}
-                                                className="text-xs px-1.5 py-0.5 rounded truncate"
-                                                style={{
-                                                    backgroundColor: note.color + '25',
-                                                    borderLeft: `3px solid ${note.color}`,
-                                                    color: 'inherit'
-                                                }}
-                                            >
-                                                {note.text}
-                                            </div>
-                                        ))}
+                                        {dayNotes.slice(0, 3).map(note => {
+                                            // Parse color:style format
+                                            const [noteColor, noteStyle] = note.color?.includes(':')
+                                                ? note.color.split(':')
+                                                : [note.color, 'filled'];
+
+                                            const noteStyles = noteStyle === 'hollow'
+                                                ? {
+                                                    backgroundColor: 'transparent',
+                                                    border: `2px solid ${noteColor}`,
+                                                    borderLeft: `3px solid ${noteColor}`
+                                                }
+                                                : {
+                                                    backgroundColor: noteColor + '25',
+                                                    borderLeft: `3px solid ${noteColor}`
+                                                };
+
+                                            return (
+                                                <div
+                                                    key={note.id}
+                                                    className="text-xs px-1.5 py-0.5 rounded truncate"
+                                                    style={{ ...noteStyles, color: 'inherit' }}
+                                                >
+                                                    {note.text}
+                                                </div>
+                                            );
+                                        })}
                                         {dayNotes.length > 3 && (
                                             <div className="text-xs text-gray-500 dark:text-gray-400 pl-1">
                                                 +{dayNotes.length - 3} more
